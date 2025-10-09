@@ -18,24 +18,27 @@ export const CorrPanel: React.FC = () => {
 
   const copyToAtms = () => console.log("Copying finals to ATMs:", fields);
 
-  // --- inline reusable components ---
+  // --- small reusable controls ---
   const InputField = ({
     label,
     value,
     onChange,
+    className = "",
   }: {
     label: string;
     value: string;
     onChange: (v: string) => void;
+    className?: string;
   }) => (
-    <div className="flex flex-col gap-[2px] w-full text-sm text-gray-200">
-      <label className="text-[12px] leading-none">{label}</label>
+    <div className={`flex flex-col gap-[2px] ${className}`}>
+      <label className="text-[12px] leading-none text-gray-300">{label}</label>
       <input
-        type="text"
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="h-[24px] px-[8px] bg-[rgba(255,255,255,0.05)] border-b border-[rgba(255,255,255,0.15)] 
-                   rounded-t-[2px] text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        className="h-[24px] px-[8px] bg-[rgba(255,255,255,0.05)]
+                   border-b border-[rgba(255,255,255,0.15)]
+                   rounded-t-[2px] text-gray-100 text-sm 
+                   focus:outline-none focus:ring-1 focus:ring-blue-500"
       />
     </div>
   );
@@ -51,24 +54,22 @@ export const CorrPanel: React.FC = () => {
     value: string;
     onChange: (v: string) => void;
   }) => (
-    <div className="flex flex-col gap-[2px] text-sm text-gray-200 w-[220px]">
-      <label className="text-[12px] leading-none">{label}</label>
-      <div
-        className="flex items-center justify-between h-[24px] px-[8px] bg-[rgba(255,255,255,0.05)] 
-                   border-t border-[rgba(255,255,255,0.10)] rounded-[2px]"
+    <div className="flex flex-col gap-[2px] w-[220px]">
+      <label className="text-[12px] leading-none text-gray-300">{label}</label>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="h-[24px] px-[8px] bg-[rgba(255,255,255,0.05)] 
+                   border-t border-[rgba(255,255,255,0.10)] 
+                   rounded-[2px] text-gray-100 text-sm 
+                   focus:outline-none"
       >
-        <select
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          className="bg-transparent w-full text-gray-100 text-sm focus:outline-none appearance-none"
-        >
-          {options.map(opt => (
-            <option key={opt} value={opt} className="bg-gray-800 text-gray-100">
-              {opt}
-            </option>
-          ))}
-        </select>
-      </div>
+        {options.map(opt => (
+          <option key={opt} value={opt} className="bg-gray-800 text-gray-100">
+            {opt}
+          </option>
+        ))}
+      </select>
     </div>
   );
 
@@ -93,29 +94,54 @@ export const CorrPanel: React.FC = () => {
     );
   };
 
-  // --- main layout ---
+  // --- layout ---
   return (
-    <div className="flex flex-col bg-gray-900 border-t border-gray-700 p-3 gap-3 text-gray-200">
-      <div className="flex gap-4 flex-wrap items-start">
+    <div className="flex flex-col bg-gray-900 border-t border-gray-700 px-3 py-4 text-gray-200 gap-3">
+      {/* Row 1: Corr dropdown + three inputs */}
+      <div className="flex flex-row gap-4 items-end">
         <SelectField
           label="Corr"
           options={["Vol Parameter Corr", "Shift Corr", "Beta Corr"]}
           value={corrType}
           onChange={setCorrType}
         />
-
-        <div className="flex gap-4 flex-1 flex-wrap">
-          <InputField label="Short Corr" value={fields.shortCorr} onChange={v => handleChange("shortCorr", v)} />
-          <InputField label="Long Corr" value={fields.longCorr} onChange={v => handleChange("longCorr", v)} />
-          <InputField label="Mean Rev Corr" value={fields.meanRevCorr} onChange={v => handleChange("meanRevCorr", v)} />
-        </div>
+        <InputField
+          label="Short Corr"
+          value={fields.shortCorr}
+          onChange={v => handleChange("shortCorr", v)}
+          className="w-[140px]"
+        />
+        <InputField
+          label="Long Corr"
+          value={fields.longCorr}
+          onChange={v => handleChange("longCorr", v)}
+          className="w-[140px]"
+        />
+        <InputField
+          label="Mean Rev Corr"
+          value={fields.meanRevCorr}
+          onChange={v => handleChange("meanRevCorr", v)}
+          className="w-[160px]"
+        />
       </div>
 
-      <div className="flex gap-4 flex-wrap">
-        <InputField label="Initial Shift Corr" value={fields.initShiftCorr} onChange={v => handleChange("initShiftCorr", v)} />
-        <InputField label="Mean Rev Initial Shift Corr" value={fields.meanRevInitShiftCorr} onChange={v => handleChange("meanRevInitShiftCorr", v)} />
+      {/* Row 2: two wider inputs */}
+      <div className="flex flex-row gap-4 items-end">
+        <InputField
+          label="Initial Shift Corr"
+          value={fields.initShiftCorr}
+          onChange={v => handleChange("initShiftCorr", v)}
+          className="flex-1 min-w-[260px]"
+        />
+        <InputField
+          label="Mean Rev Initial Shift Corr"
+          value={fields.meanRevInitShiftCorr}
+          onChange={v => handleChange("meanRevInitShiftCorr", v)}
+          className="flex-1 min-w-[260px]"
+        />
       </div>
 
+      {/* Row 3: buttons */}
       <div className="flex justify-end gap-3 pt-2">
         <ActionButton label="Clear" onClick={clearAll} />
         <ActionButton label="Copy Finals to ATMs" onClick={copyToAtms} variant="primary" />
