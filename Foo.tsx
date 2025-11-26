@@ -75,3 +75,32 @@ export default function EventEditor({
     </div>
   );
 }
+
+
+import React, { useState } from "react";
+import EventEditor from "./EventEditor";
+
+export default function Panel() {
+  const [form, setForm] = useState({
+    start: "",
+    end: "",
+    weight: "",
+    description: "",
+    eventType: "",
+    ccy: "",
+    eventTypeOptions: ["ADDVOL", "MULTIVAR", "SOMETHING"],
+    ccyOptions: ["USD", "JPY", "EUR", "GBP"]
+  });
+
+  const update = (field, value) =>
+    setForm(f => ({ ...f, [field]: value }));
+
+  const addEvent = () => {
+    // dispatch to Redux here
+    console.log("Adding event:", form);
+  };
+
+  return (
+    <EventEditor values={form} onChange={update} onAdd={addEvent} />
+  );
+}
