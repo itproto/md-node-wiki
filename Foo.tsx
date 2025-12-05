@@ -1,6 +1,18 @@
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='red'><path d='M6 1v2H3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-3V1h-2v2H8V1H6zm11 5H3v10h14V6z'/></svg>") center no-repeat;
-  color: transparent;      /* hide built-in icon */
-  opacity: 1;
+function pythonFormatFloat(n) {
+  if (n === 0) return "0.0";
+
+  const absn = Math.abs(n);
+
+  // Python switches to exponential below 1e-4 or above/equal 1e16
+  if (absn < 1e-4 || absn >= 1e16) {
+    // format like Python: exponential, lowercase 'e', exponent at least 2 digits
+    return n.toExponential().replace(/e\+?(-?0*)(\d+)/, (m, zeros, digits) => {
+      return "e" + (n < 0 && !m.includes("e-") ? "-" : "") + digits.padStart(2, "0");
+    });
+  }
+
+  // fixed-point display similar to Python (remove unnecessary trailing zeros)
+  let s = n.toString();
+  if (!s.includes(".")) s += ".0";
+  return s;
 }
