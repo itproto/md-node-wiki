@@ -1,18 +1,50 @@
-function pythonFormatFloat(n) {
-  if (n === 0) return "0.0";
+const DATE_TIME_FORMAT = /^(\d{4})(\d{2})(\d{2}) (\d{2})(\d{2})$/;
 
-  const absn = Math.abs(n);
+export function DateTimeTextEditor(props) {
+  const [value, setValue] = useState("");
 
-  // Python switches to exponential below 1e-4 or above/equal 1e16
-  if (absn < 1e-4 || absn >= 1e16) {
-    // format like Python: exponential, lowercase 'e', exponent at least 2 digits
-    return n.toExponential().replace(/e\+?(-?0*)(\d+)/, (m, zeros, digits) => {
-      return "e" + (n < 0 && !m.includes("e-") ? "-" : "") + digits.padStart(2, "0");
-    });
-  }
+  // Format timestamp or Date into your desired string
+  const formatIn = v => {
+    if (!v) return "";
+    const d = new Date(v);
+    const yyyy = d.getFullYear().toString();
+    const dd   = String(d.getDate()).padStart(2, "0");
+    const mm   = String(d.getMonth() + 1).padStart(2, "0");
+    const HH   = String(d.getHours()).padStart(2, "0");
+    const MM   = String(d.getMinutes()).padStart(2, "0");
+    return `${yyyy}${dd}${mm} ${HH}${MM}`;
+  };
 
-  // fixed-point display similar to Python (remove unnecessary trailing zeros)
-  let s = n.toString();
-  if (!s.includes(".")) s += ".0";
-  return s;
+  // Take the string back to timestamp (or keep string if you want)
+  const parseOut = s => {
+    if (!DATE_TIME_FORMAT.test(s)) return props.value;
+    const yyyy = s.slice(0, 4);
+    const dd   = s.slice(4, 6);
+    const mm   = s.slice(6, 8);
+    const HH   = s.slice(9, 11);
+    const MM   = s.slice(11, 13);
+    return new Date(`${yyyy}-${mm}-${dd}T${HH}:${MM}:00`).getTime();
+  };
+
+  useEffect(() => {
+    setValue(formatIn(props.value));
+  }, []);
+
+  return (
+    <input
+      autoFocus
+      style={{ width: "100%", height: "100%" }}
+      value={value}
+      onChange={e => setValue(e.target.value)}
+      onBlur={() => props.stopEditing()}
+      onKeyDown={e => {
+        if (e.key === "Enter") props.stopEditing();
+      }}
+    />
+  );
 }
+
+// Required by AG Grid
+DateTimeTextEditor.prototype.getValue = function () {
+  return parseOut(this.state.value);
+};
