@@ -1,50 +1,52 @@
-const DATE_TIME_FORMAT = /^(\d{4})(\d{2})(\d{2}) (\d{2})(\d{2})$/;
+// Props come from AG Grid
+// value: current value
+// initialValue: value when editing started
+// onValueChange: call this whenever your logical value changes
 
-export function DateTimeTextEditor(props) {
-  const [value, setValue] = useState("");
+const DISPLAY_FORMAT = 'YYYYMMDD HH:mm';
 
-  // Format timestamp or Date into your desired string
-  const formatIn = v => {
-    if (!v) return "";
-    const d = new Date(v);
-    const yyyy = d.getFullYear().toString();
-    const dd   = String(d.getDate()).padStart(2, "0");
-    const mm   = String(d.getMonth() + 1).padStart(2, "0");
-    const HH   = String(d.getHours()).padStart(2, "0");
-    const MM   = String(d.getMinutes()).padStart(2, "0");
-    return `${yyyy}${dd}${mm} ${HH}${MM}`;
+const DateTimeEditor = ({ value, initialValue, onValueChange }) => {
+  const [text, setText] = React.useState(
+    value ? moment(value).format(DISPLAY_FORMAT) : ''
+  );
+
+  // Optional: keep local text in sync if grid changes value while editing
+  React.useEffect(() => {
+    if (value) {
+      setText(moment(value).format(DISPLAY_FORMAT));
+    }
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+
+    const m = moment(newText, DISPLAY_FORMAT, true);
+    if (m.isValid()) {
+      // AG Grid will hold this edited value and only write it to row data
+      // when editing stops
+      onValueChange(m.toDate());
+    } else {
+      // You can choose to pass null or keep previous value
+      onValueChange(null);
+    }
   };
 
-  // Take the string back to timestamp (or keep string if you want)
-  const parseOut = s => {
-    if (!DATE_TIME_FORMAT.test(s)) return props.value;
-    const yyyy = s.slice(0, 4);
-    const dd   = s.slice(4, 6);
-    const mm   = s.slice(6, 8);
-    const HH   = s.slice(9, 11);
-    const MM   = s.slice(11, 13);
-    return new Date(`${yyyy}-${mm}-${dd}T${HH}:${MM}:00`).getTime();
-  };
-
-  useEffect(() => {
-    setValue(formatIn(props.value));
-  }, []);
+  // Optional callbacks like isCancelAfterEnd / validation etc
+  useGridCellEditor({
+    isCancelAfterEnd: () =>
+      !moment(text, DISPLAY_FORMAT, true).isValid(),
+  });
 
   return (
     <input
+      id="ag-grid-datetime-input"
+      type="text"
+      value={text}
+      onChange={handleChange}
+      placeholder="yyyymmdd hh:mm"
+      style={{ width: '100%' }}
       autoFocus
-      style={{ width: "100%", height: "100%" }}
-      value={value}
-      onChange={e => setValue(e.target.value)}
-      onBlur={() => props.stopEditing()}
-      onKeyDown={e => {
-        if (e.key === "Enter") props.stopEditing();
-      }}
     />
   );
-}
-
-// Required by AG Grid
-DateTimeTextEditor.prototype.getValue = function () {
-  return parseOut(this.state.value);
 };
